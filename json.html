@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script> <!-- Need this libary for jquery function in script -->
+    
+    <!--using this to create a embedded stylesheet for display-->
+    <style> 
+
+        h2
+        {
+            font-family: sans-serif;
+        }
+        table 
+        {
+            width: 80%;
+            font: 15px Sans-serif;
+        }
+        table, th, td 
+        {
+            border: solid 1px #DDD;
+            border-collapse: collapse;
+            padding: 2px 3px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<!-- Data from the JSON file will be placed in a table and appended here. There is also a search box that specifies emails for searching, and it filters the table as you type -->
+<body>
+    <h2> Customer Data </h2>
+
+    <input type="text" id="userinput" onkeyup="searching()" placeholder="Enter an Email Address...">
+   
+    <div id="showData"></div>
+</body>
+
+<script>
+    /*  Jquery ready function that launches the function once the page loads. Then it gets the JSON file and pushes
+        the values into an array to store the items.
+    */
+
+    $(document).ready(function () {
+        // this gets the data from the JSON file and initializes an array that takes the values of 
+        $.getJSON("customers.json", function (data) {
+
+            var array_list = [];      // array initialization
+            $.each(data, function (index, value) {
+                array_list.push(value);       
+            });
+
+           /*   
+                this collects data for the columns of the table that's about to be created from the JSON object keys and then pushes them into the array
+                using nested for loops 
+            */  
+            var col = []; // array initialization for array on table
+            for (var i = 0; i < array_list.length; i++) 
+            {
+                for (var key in array_list[i]) 
+                {
+                    if (col.indexOf(key) === -1) 
+                    {
+                        col.push(key);
+                    }
+                }
+            }
+
+            // this dynamically creates a table 
+            table = document.createElement("table");
+
+            var tr = table.insertRow(-1);    //inserting rows for the table              
+
+            for (var i = 0; i < col.length; i++) // this for loop appends headers for the table for the amount of columns determined by the keys
+            {
+                var th = document.createElement("th");     
+                th.innerHTML = col[i];
+                tr.appendChild(th);
+            }
+
+            // This takes the values of the JSON file that were stored in the array and inserts rows for each iteration containing the data
+            for (var i = 0; i < array_list.length; i++) 
+            {
+                tr = table.insertRow(-1);
+
+                for (var j = 0; j < col.length; j++) 
+                {
+                    var tablecells = tr.insertCell(-1);
+                    tablecells.innerHTML = array_list[i][col[j]];
+                }
+            }
+
+            // this creates a variable that manipulates the DOM by appending the table to the blank div in the HTML portion
+            var divreplace = document.getElementById("showData");
+            divreplace.innerHTML = "";
+            divreplace.appendChild(table);
+
+            searching.apply(table); //applies the table to be processed by the searching function 
+            
+        });
+    });
+
+    /* this function powers the search bar at the top of the page by getting user input and find the td elements that match it*/
+    function searching() 
+    { 
+      var input, tr, td, txtValue; // initializes variables 
+      input = document.getElementById("userinput").value.toUpperCase(); //makes the input uppercase to avoid case sensitivity 
+      tr = table.rows; //sets the variable equal to the rows o the table
+
+    // This for loop llps through all the rows and will hide the rows that contain values that do not match the email address provided by the user
+    for (var i = 0; i < tr.length; i++) 
+    {
+        td = tr[i].getElementsByTagName("td")[1];
+
+        if (td) 
+        {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(input) > -1) 
+          {
+            tr[i].style.display = "";
+          } 
+          else 
+          {
+            tr[i].style.display = "none";
+          }
+        }
+    }
+</script>
+</html>
